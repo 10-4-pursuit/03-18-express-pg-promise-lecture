@@ -1,6 +1,7 @@
 import express from "express";
 
 import booksRouter from "./routers/books.js";
+import usersRouter from "./routers/users.js";
 
 const app = express();
 
@@ -11,5 +12,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/books", booksRouter);
+app.use("/users", usersRouter);
 
 export default app;

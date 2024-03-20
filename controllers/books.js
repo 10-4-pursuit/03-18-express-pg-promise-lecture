@@ -1,11 +1,3 @@
-const books = [
-  "The Great Gatsby", 
-  "The Catcher in the Rye", 
-  "To Kill a Mockingbird",
-  "The Three Kingdoms",
-  "Rashomon"
-];
-
 import db from "../db/config.js";
 
 const getSingleBook = async (req, res) => {
@@ -20,7 +12,7 @@ const getSingleBook = async (req, res) => {
 }
 
 const getAllBooks = async (req, res) => {
-  const results = await db.query("SELECT * FROM books");
+  const results = await db.query("SELECT * FROM books ORDER BY id");
   res.json(results);
 }
 
@@ -66,5 +58,10 @@ const deleteBook = async (req, res) => {
   }
 }
 
-export { getSingleBook, getAllBooks, createBook, updateBook, deleteBook };
+const getCheckedOutBooks = async (req, res) => {
+  const results = await db.query("SELECT * FROM users JOIN books ON users.id = books.user_id");
+  res.json(results);
+}
+
+export { getSingleBook, getAllBooks, createBook, updateBook, deleteBook, getCheckedOutBooks };
 
