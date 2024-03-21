@@ -61,14 +61,23 @@ const checkoutBook = async (req, res) => {
   const { bookId } = req.body;
 
   try {
-    const user = await db.one("SELECT * FROM users WHERE id = $1", id);
     const book = await db.one("SELECT * FROM books WHERE id = $1", bookId);
     
-    const updatedUser = await db.one(
-      "UPDATE books SET user_id = $2 WHERE id = $1 RETURNING *", [bookId, id]
-    );
+    const currentlyCheckedOut = await db.one(`
+      SELECT COUNT(*) FROM users_books WHERE book_id = $1
+    `, [bookId]);
 
-    res.json(updatedUser);
+    const checkedOutCount = parseInt(currentlyCheckedOut.count);
+
+    if(checkedOutCount >= book.quantity) {
+      return res.status(400).json({error: "No copies available"});
+    }
+    else {
+      const insertResult = await db.one(
+        "INSERT INTO users_books (user_id, book_id) VALUES ($1, $2) RETURNING *", [id, bookId]
+      );
+      return res.json(insertResult);
+    }
   }
   catch(err) {
     console.log(err);
@@ -79,7 +88,12 @@ const checkoutBook = async (req, res) => {
 const checkedOutBooksByUser = async (req, res) => {
   const { id } = req.params;
   try {
-    const results = await db.query("SELECT * FROM users JOIN books ON users.id = books.user_id WHERE users.id = $1", id);
+    const results = await db.query(`
+      SELECT * FROM users 
+      JOIN users_books ON users.id = users_books.user_id
+      JOIN books ON users_books.book_id = books.id
+      WHERE users.id = $1
+    `, id);
     res.json(results);
   }
   catch(err) {

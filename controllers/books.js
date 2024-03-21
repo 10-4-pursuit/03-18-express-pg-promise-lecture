@@ -59,7 +59,11 @@ const deleteBook = async (req, res) => {
 }
 
 const getCheckedOutBooks = async (req, res) => {
-  const results = await db.query("SELECT * FROM users JOIN books ON users.id = books.user_id");
+  const results = await db.query(`
+    SELECT title, username, books.id AS book_id, users.id AS user_id FROM books
+    JOIN users_books ON books.id = users_books.book_id
+    JOIN users ON users_books.user_id = users.id
+  `);
   res.json(results);
 }
 
